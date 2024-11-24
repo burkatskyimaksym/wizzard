@@ -1,55 +1,63 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
-	"syscall"
-	"unsafe"
+	"time"
+
+	service "github.com/sergereinov/go-windows-service"
 )
 
-func MyCustomError(message string) error {
-	return fmt.Errorf("Custom Error: %s", message)
-}
+var (
+	// You can set the Version at compile stage of your dev pipeline with:
+	// go build -ldflags="-X main.Version=1.0.0" ./example
+	Version     = "0.1"
+	Name        = service.ExecutableFilename()
+	Description = "My service"
+)
 
-func changeWallpaper() error {
+func main() {
+	logger := log.Default()
+
 	dir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting working directory:", err)
-		return err
 	}
 
-	wallpaperPath := fmt.Sprintf("%s\\wallpaper.jpg", dir)
-
-	user32 := syscall.NewLazyDLL("user32.dll")
-	setWallpaper := user32.NewProc("SystemParametersInfoW")
-
-	pathPtr, err := syscall.UTF16PtrFromString(wallpaperPath)
+	file, err := os.OpenFile(fmt.Sprintf("%s\\logs\\%s-%s.log", dir, Name, time.Now().Format("2006-01-02")), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		fmt.Println("Error converting string:", err)
-		return err
+		log.Fatal("Error opening log file:", err)
 	}
+	defer file.Close()
 
-	const SPI_SETDESKWALLPAPER = 0x0014
-	const SPIF_UPDATEINIFILE = 0x01
-	const SPIF_SENDCHANGE = 0x02
+	logger.SetOutput(file)
 
-	ret, _, _ := setWallpaper.Call(
-		uintptr(SPI_SETDESKWALLPAPER),
-		0,
-		uintptr(unsafe.Pointer(pathPtr)),
-		uintptr(SPIF_UPDATEINIFILE|SPIF_SENDCHANGE),
-	)
+	// Run service wrapper
+	service.Service{
+		Version:     Version,
+		Name:        Name,
+		Description: Description,
+		Logger:      logger,
+	}.Proceed(func(ctx context.Context) {
 
-	if ret == 0 {
-		return fmt.Errorf("Failed to set wallpaper")
-	} else {
-		return nil
-	}
-}
+		logger.Printf("Service %s v%s started", Name, Version)
 
-func main() {
-	err := changeWallpaper()
-	if err != nil {
-		fmt.Printf("Error setting wallpaper %s\n", err)
-	}
+		if err := openBrowser(); err != nil {
+			logger.Printf("Error changing the wallpaper %s", err)
+		} else {
+			logger.Printf("Opened browser")
+		}
+
+		<-ctx.Done()
+
+		if err := changeWallpaper(); err != nil {
+			logger.Printf("Error changing the wallpaper %s", err)
+		} else {
+			logger.Printf("Changed wallpapers")
+		}
+
+		logger.Printf("Service %s v%s stopped", Name, Version)
+	})
 }

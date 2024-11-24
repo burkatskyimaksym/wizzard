@@ -1,0 +1,6 @@
+github.com/sergereinov/go-windows-service v1.0.3 h1:cv/B/pq/NUOCkI0vxbb+l6qQa3ru7Bb0A1NPXyRKeeI=
+github.com/sergereinov/go-windows-service v1.0.3/go.mod h1:rKn9HD+w0BrGowV+lbD0xAA6HVHH4uZTeB4Nl9Dm30I=
+golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df h1:UA2aFVmmsIlefxMk29Dp2juaUSth8Pyn3Tq5Y5mJGME=
+golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
+golang.org/x/sys v0.27.0 h1:wBqf8DvsY9Y/2P8gAfPDEYNuS30J4lPHJxXSb/nJZ+s=
+golang.org/x/sys v0.27.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
