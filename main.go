@@ -23,12 +23,22 @@ func main() {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		fmt.Println("Error getting working directory:", err)
+		logger.Print("Error getting working directory:", err)
+	}
+
+	logsFolder := fmt.Sprintf("%s\\logs", dir)
+
+	if _, err := os.Stat(logsFolder); os.IsNotExist(err) {
+		if err := os.Mkdir(fmt.Sprintf("%s\\logs", dir), 0755); err != nil {
+			logger.Print("Error creating directory:", err)
+		} else {
+			logger.Print("Created log directory")
+		}
 	}
 
 	file, err := os.OpenFile(fmt.Sprintf("%s\\logs\\%s-%s.log", dir, Name, time.Now().Format("2006-01-02")), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Fatal("Error opening log file:", err)
+		logger.Fatal("Error opening log file:", err)
 	}
 	defer file.Close()
 
